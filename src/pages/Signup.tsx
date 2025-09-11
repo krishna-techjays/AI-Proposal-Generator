@@ -11,6 +11,7 @@ interface UserData {
   name: string;
   email: string;
   password: string;
+  companyName?: string;
   isAuthenticated: boolean;
   createdAt: string;
 }
@@ -23,7 +24,8 @@ export default function Signup() {
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    companyName: ""
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -88,6 +90,7 @@ export default function Signup() {
         const userData = {
           name: existingUser.name,
           email: existingUser.email,
+          companyName: existingUser.companyName || "",
           isAuthenticated: true,
           createdAt: existingUser.createdAt
         };
@@ -102,6 +105,7 @@ export default function Signup() {
           name: formData.name,
           email: formData.email,
           password: formData.password, // In real app, this would be hashed
+          companyName: formData.companyName,
           isAuthenticated: true,
           createdAt: new Date().toISOString()
         };
@@ -123,6 +127,7 @@ export default function Signup() {
         localStorage.setItem("user_profile", JSON.stringify({
           name: userData.name,
           email: userData.email,
+          companyName: userData.companyName,
           isAuthenticated: true,
           createdAt: userData.createdAt
         }));
@@ -146,7 +151,8 @@ export default function Signup() {
       name: "",
       email: "",
       password: "",
-      confirmPassword: ""
+      confirmPassword: "",
+      companyName: ""
     });
   };
 
@@ -201,6 +207,23 @@ export default function Signup() {
                 className="h-11"
               />
             </div>
+
+            {!isSignIn && (
+              <div className="space-y-2">
+                <Label htmlFor="companyName" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Company Name (Optional)
+                </Label>
+                <Input
+                  id="companyName"
+                  type="text"
+                  placeholder="Enter your company name"
+                  value={formData.companyName}
+                  onChange={(e) => handleInputChange("companyName", e.target.value)}
+                  className="h-11"
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center gap-2">

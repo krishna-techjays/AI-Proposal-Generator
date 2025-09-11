@@ -1183,35 +1183,239 @@ You MUST include BOTH the trained structure headings AND research-based headings
 🚫 Do NOT use generic business presentation templates
 🚫 Do NOT use one-size-fits-all slide titles
 
-**REQUIRED HEADING FORMAT:**
-Generate headings in this exact format, combining BOTH trained structure AND research-based content:
+**SCHEMA-BASED CONTENT GENERATION:**
+🚨 **CRITICAL**: You must generate content using the EXACT schema format below. This ensures perfect slide separation and structure.
 
-# SLIDE 1: EXECUTIVE SUMMARY
-# SLIDE 2: MARKET ANALYSIS & INDUSTRY OVERVIEW  
-# SLIDE 3: SOLUTION ARCHITECTURE & TECHNICAL APPROACH
-# SLIDE 4: IMPLEMENTATION STRATEGY & METHODOLOGY
-# SLIDE 5: PROJECT TIMELINE & MILESTONES
-# SLIDE 6: RISK MANAGEMENT & MITIGATION
-# SLIDE 7: FINANCIAL ANALYSIS & ROI PROJECTIONS
-# SLIDE 8: SUCCESS METRICS & PERFORMANCE INDICATORS
+**CONTENT STRUCTURE RULES:**
+✅ Each SLIDE_CONTENT must contain ONLY content relevant to that specific slide title
+✅ Do NOT include subheadings or content from other slides within SLIDE_CONTENT
+✅ Each slide must be self-contained and focused on its specific topic
+✅ Use bullet points, paragraphs, and lists within SLIDE_CONTENT
+✅ Do NOT mix content from different slides or sections
 
-# SLIDE 9: [RESEARCH_BASED_ADDITIONAL_HEADING_SPECIFIC_TO_THEIR_PROJECT]
-# SLIDE 10: [RESEARCH_BASED_ADDITIONAL_HEADING_SPECIFIC_TO_THEIR_PROJECT]
-# SLIDE 11: [RESEARCH_BASED_ADDITIONAL_HEADING_SPECIFIC_TO_THEIR_PROJECT]
-# SLIDE 12: [RESEARCH_BASED_ADDITIONAL_HEADING_SPECIFIC_TO_THEIR_PROJECT]
-# SLIDE 13: [RESEARCH_BASED_ADDITIONAL_HEADING_SPECIFIC_TO_THEIR_PROJECT]
-# SLIDE 14: [RESEARCH_BASED_ADDITIONAL_HEADING_SPECIFIC_TO_THEIR_PROJECT]
-# SLIDE 15: [RESEARCH_BASED_ADDITIONAL_HEADING_SPECIFIC_TO_THEIR_PROJECT]
-# SLIDE 16: [RESEARCH_BASED_ADDITIONAL_HEADING_SPECIFIC_TO_THEIR_PROJECT]
+**MANDATORY CORE SECTIONS (Slides 1-8):**
+Generate these 8 slides using the schema format:
 
-**CRITICAL REQUIREMENT:**
-- Slides 1-8 MUST use the exact trained structure headings above (unless user has deleted some)
-- Slides 9-16 MUST be research-based headings specific to their project requirements
-- Total: EXACTLY 16 slides (8 trained + 8 research-based)
-- Research-based headings should be specific to: "${projectData.projectRequirements}"
-- Research-based headings should be relevant to: ${projectData.industryType} industry
-- Each research-based slide should focus on a different aspect of their requirements
+===SLIDE_START===
+SLIDE_NUMBER: 1
+SLIDE_TITLE: Executive Summary
+SLIDE_CONTENT: 
+• Project Overview: ${projectData.projectName} - A comprehensive solution for ${projectData.companyName}
+• Key Objectives: Deliver innovative features including ${projectData.selectedFeatures}
+• Business Benefits: Enhanced efficiency, improved user experience, and competitive advantage
+• Target Market: ${projectData.industryType} industry with focus on modern technology adoption
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 2
+SLIDE_TITLE: Market Analysis
+SLIDE_CONTENT: 
+• Industry Trends: Current market dynamics in ${projectData.industryType} sector
+• Market Size: Growing demand for digital transformation solutions
+• Competitive Landscape: Analysis of existing solutions and market gaps
+• Opportunities: Untapped potential in AI-powered automation and user experience enhancement
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 3
+SLIDE_TITLE: Solution Architecture
+SLIDE_CONTENT: 
+• Technical Approach: Modern, scalable architecture designed for ${projectData.projectName}
+• System Design: Microservices-based architecture with cloud-native deployment
+• Technology Stack: Latest frameworks and tools for optimal performance
+• Integration Capabilities: Seamless integration with existing systems and third-party services
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 4
+SLIDE_TITLE: Implementation Strategy
+SLIDE_CONTENT: 
+• Development Phases: Structured approach with clear milestones
+• Feature Implementation: Prioritized rollout of ${projectData.selectedFeatures}
+• Deployment Approach: Agile methodology with continuous integration
+• Quality Assurance: Comprehensive testing and validation processes
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 5
+SLIDE_TITLE: Project Timeline
+SLIDE_CONTENT: 
+• Project Duration: ${projectData.timeline} timeline with clear phases
+• Key Milestones: Major deliverables and checkpoints
+• Critical Path: Essential tasks and dependencies
+• Resource Allocation: Team assignments and timeline optimization
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 6
+SLIDE_TITLE: Risk Management
+SLIDE_CONTENT: 
+• Risk Assessment: Comprehensive analysis of potential challenges
+• Mitigation Strategies: Proactive measures for ${projectData.industryType} industry
+• Contingency Planning: Backup plans for critical scenarios
+• Monitoring Framework: Continuous risk evaluation and management
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 7
+SLIDE_TITLE: Financial Analysis
+SLIDE_CONTENT: 
+• Cost Breakdown: Detailed budget analysis for ${projectData.companyName}
+• ROI Projections: Expected returns and business value
+• Investment Requirements: Resource allocation and funding needs
+• Financial Benefits: Long-term cost savings and revenue generation
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 8
+SLIDE_TITLE: Success Metrics
+SLIDE_CONTENT: 
+• Key Performance Indicators: Measurable success criteria
+• Performance Metrics: System performance and user satisfaction
+• Business Impact: Quantifiable business outcomes
+• Evaluation Framework: Continuous monitoring and improvement processes
+===SLIDE_END===
+
+**RESEARCH-BASED SLIDES (Slides 9-16):**
+After generating the 8 mandatory slides, conduct comprehensive research using ALL user inputs:
+
+**RESEARCH INPUTS:**
+- Project Requirements: "${projectData.projectRequirements}"
+- Industry: ${projectData.industryType}
+- Company: ${projectData.companyName}
+- Selected Features: ${projectData.selectedFeatures}
+- Team Composition: ${projectData.teamMembers}
+- Timeline: ${projectData.timeline}
+
+**FEATURE-BASED RESEARCH ANALYSIS:**
+Analyze each selected feature and generate research-based slides that address:
+1. Implementation strategies for selected features
+2. Integration challenges between features
+3. Technical requirements for feature combinations
+4. Industry-specific considerations for features
+5. Compliance requirements for features in ${projectData.industryType}
+6. Training needs for selected features
+7. Support and maintenance for feature set
+8. Future enhancements based on feature foundation
+
+**RESEARCH SLIDE GENERATION EXAMPLES:**
+
+If user selected features like "AI-Powered Employee Onboarding", "Predictive Analytics", "Automated Compliance":
+
+===SLIDE_START===
+SLIDE_NUMBER: 9
+SLIDE_TITLE: AI-Powered Employee Onboarding Implementation Strategy
+SLIDE_CONTENT: 
+• Implementation Approach: AI-driven onboarding system for ${projectData.companyName}
+• Feature Integration: Seamless connection with existing HR systems
+• AI Model Training: Industry-specific algorithms for ${projectData.industryType}
+• Compliance Considerations: Regulatory requirements and data protection
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 10
+SLIDE_TITLE: Predictive Analytics Integration Architecture
+SLIDE_CONTENT: 
+• Technical Implementation: Advanced analytics platform for ${projectData.projectName}
+• Data Pipeline Design: Real-time data processing and analysis
+• Integration Strategy: Connection with AI-Powered Onboarding features
+• Analytics Dashboard: Customized reporting for ${projectData.companyName}
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 11
+SLIDE_TITLE: Automated Compliance Framework for ${projectData.industryType}
+SLIDE_CONTENT: 
+• Compliance Automation: Automated monitoring and reporting systems
+• Regulatory Requirements: ${projectData.industryType} specific compliance standards
+• Feature Integration: Connection with onboarding and analytics systems
+• Monitoring Framework: Continuous compliance validation and reporting
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 12
+SLIDE_TITLE: Feature Integration Strategy for ${projectData.companyName}
+SLIDE_CONTENT: 
+• Integration Architecture: Unified system connecting all selected features
+• Data Flow Design: Seamless data exchange between feature modules
+• User Experience: Consistent interface across all integrated features
+• System Performance: Optimized performance for feature combinations
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 13
+SLIDE_TITLE: Training Program for Selected Features
+SLIDE_CONTENT: 
+• Training Modules: Comprehensive training for ${projectData.selectedFeatures}
+• Hands-on Workshops: Practical training sessions for ${projectData.teamMembers}
+• Certification Programs: Skill validation and competency assessment
+• Ongoing Support: Continuous learning and skill development
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 14
+SLIDE_TITLE: Support and Maintenance Framework
+SLIDE_CONTENT: 
+• Support Strategy: 24/7 technical support for all features
+• Maintenance Schedule: Regular updates and system optimization
+• Troubleshooting Protocols: Quick resolution of technical issues
+• Performance Monitoring: Continuous system health and optimization
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 15
+SLIDE_TITLE: ROI Analysis for Feature Combination
+SLIDE_CONTENT: 
+• Cost-Benefit Analysis: Financial impact of selected features
+• ROI Projections: Expected returns for ${projectData.companyName}
+• Break-even Analysis: Timeline for investment recovery
+• Long-term Value: Sustained business benefits and growth
+===SLIDE_END===
+
+===SLIDE_START===
+SLIDE_NUMBER: 16
+SLIDE_TITLE: Future Enhancement Roadmap
+SLIDE_CONTENT: 
+• Feature Evolution: Planned enhancements and new capabilities
+• Scalability Planning: Growth strategies for ${projectData.companyName}
+• Technology Roadmap: Future technology integration and upgrades
+• Innovation Pipeline: Next-generation features and capabilities
+===SLIDE_END===
+
+**CRITICAL SCHEMA REQUIREMENTS:**
+🚨 **MANDATORY FORMAT**: You MUST use the exact schema format for ALL slides:
+- Start each slide with: ===SLIDE_START===
+- Include: SLIDE_NUMBER: [number]
+- Include: SLIDE_TITLE: [title]
+- Include: SLIDE_CONTENT: [detailed content]
+- End each slide with: ===SLIDE_END===
+
+**SLIDE STRUCTURE REQUIREMENTS:**
+- Slides 1-8: Use the exact mandatory structure headings above
+- Slides 9-16: Generate research-based headings specific to selected features and project requirements
+- Total: EXACTLY 16 slides (8 mandatory + 8 research-based)
+- Research-based headings must be specific to: "${projectData.projectRequirements}"
+- Research-based headings must be relevant to: ${projectData.industryType} industry
+- Research-based headings must address: Selected features ${projectData.selectedFeatures}
+- Each research-based slide must focus on a different aspect of their requirements and features
 - **ADAPTIVE**: If user has deleted mandatory headings, adjust content generation to maintain completeness
+
+**SCHEMA VALIDATION:**
+✅ Every slide must follow the exact schema format
+✅ No content outside of SLIDE_CONTENT sections
+✅ All 16 slides must be numbered sequentially
+✅ Research-based slides must be feature-specific and industry-relevant
+✅ Each SLIDE_CONTENT must be self-contained and focused
+✅ Do NOT include content from other slides within SLIDE_CONTENT
+✅ Use bullet points (•) for organized content structure
+✅ Do NOT mix different slide topics or sections
+
+**CONTENT QUALITY REQUIREMENTS:**
+🚨 **CRITICAL**: Each slide must contain ONLY content relevant to its specific title
+🚨 **NO MIXING**: Do not include subheadings or content from other slides
+🚨 **FOCUSED CONTENT**: Each SLIDE_CONTENT should be about ONE specific topic only
+🚨 **CLEAN SEPARATION**: Ensure clear boundaries between different slide content
+🚨 **PROPER STRUCTURE**: Use bullet points and clear organization within each slide
 
 **REFERENCE BUSINESS PROPOSAL STRUCTURE** (Adapt these concepts to YOUR specific project):
 Standard business proposal flow: Title Page → Executive Summary → Introduction/Background → Objectives/Goals → Proposed Solution/Approach → Scope of Work → Timeline → Risk Assessment → Budget/Investment → Success Metrics → Next Steps

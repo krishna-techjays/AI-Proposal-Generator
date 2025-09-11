@@ -11,7 +11,8 @@ import {
   Users, 
   CheckCircle,
   Target,
-  BarChart3
+  BarChart3,
+  Bot
 } from "lucide-react";
 
 interface Project {
@@ -159,10 +160,16 @@ export default function Dashboard() {
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
                 <p className="text-gray-600 mb-4">Create your first AI-generated proposal to get started</p>
-                <Button onClick={() => navigate("/new-presentation")}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New Proposal
-                </Button>
+                <div className="flex space-x-3">
+                  <Button onClick={() => navigate("/new-presentation")} className="bg-blue-600 hover:bg-blue-700">
+                    <Bot className="h-4 w-4 mr-2" />
+                    Start AI Chat
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate("/new-presentation")}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create New Proposal
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ) : (

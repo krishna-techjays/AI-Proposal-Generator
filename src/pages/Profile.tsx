@@ -20,11 +20,13 @@ export default function Profile() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [userProfile, setUserProfile] = useState({
     name: "Jhon Defano",
-    email: "jhon.fany@gmail.com"
+    email: "jhon.fany@gmail.com",
+    companyName: ""
   });
   const [tempProfile, setTempProfile] = useState({
     name: "Jhon Defano",
-    email: "jhon.fany@gmail.com"
+    email: "jhon.fany@gmail.com",
+    companyName: ""
   });
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function Profile() {
 
   const handleSaveProfile = () => {
     if (!tempProfile.name.trim() || !tempProfile.email.trim()) {
-      toast.error("Please fill in all fields");
+      toast.error("Please fill in all required fields");
       return;
     }
     
@@ -290,7 +292,7 @@ export default function Profile() {
             )}
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Full Name</Label>
                 <Input 
@@ -311,6 +313,20 @@ export default function Profile() {
                   className={isEditingProfile ? "bg-white" : "bg-gray-50"}
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="companyName">Company Name (Optional)</Label>
+                <Input 
+                  id="companyName" 
+                  value={isEditingProfile ? tempProfile.companyName : userProfile.companyName}
+                  onChange={(e) => isEditingProfile && setTempProfile({...tempProfile, companyName: e.target.value})}
+                  disabled={!isEditingProfile}
+                  className={isEditingProfile ? "bg-white" : "bg-gray-50"}
+                  placeholder="Enter your company name"
+                />
+              </div>
+              <div></div>
             </div>
           </CardContent>
         </Card>
