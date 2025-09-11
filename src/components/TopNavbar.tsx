@@ -1,4 +1,4 @@
-import { Home, FileText, Plus, Bell } from "lucide-react";
+import { Home, FileText, Plus, Bell, Bot } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ const navigationItems = [{
   url: "/presentations",
   icon: FileText
 }, {
-  title: "Create New",
+  title: "Create New Proposal",
   url: "/new-presentation",
   icon: Plus
 }];

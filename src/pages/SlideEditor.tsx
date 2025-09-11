@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import { AIService } from "@/services/aiService";
+import { AIService } from "../services/aiService";
 import ChatBot from "@/components/ChatBot";
 import { ChatContext } from "@/types/chat";
 
@@ -119,7 +119,7 @@ const SlideEditor = () => {
   const [redoStack, setRedoStack] = useState([]);
 
   // Function to convert markdown to formatted HTML
-  const convertMarkdownToFormattedText = (text: string): string => {
+  const convertMarkdownToFormattedText = useCallback((text: string): string => {
     return text
       // Convert **bold** to <strong> tags
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -130,7 +130,7 @@ const SlideEditor = () => {
       // Remove slide number references
       .replace(/SLIDE\s*\d+:\s*/gi, '')
       .trim();
-  };
+  }, []);
 
   // Function to convert HTML content to clean text for editing
   const convertHtmlToCleanText = (htmlContent: string): string => {
@@ -200,8 +200,232 @@ const SlideEditor = () => {
     return htmlContent;
   };
 
-  // Function to convert AI content into slides with proper HTML structure
-  const convertContentToSlides = (content: string) => {
+  // Schema-based content parser for structured slide format
+  const parseSchemaBasedContent = useCallback((content: string) => {
+    console.log("Starting schema-based content parsing...");
+    
+    const slideRegex = /===SLIDE_START===\s*\nSLIDE_NUMBER:\s*(\d+)\s*\nSLIDE_TITLE:\s*(.+?)\s*\nSLIDE_CONTENT:\s*([\s\S]*?)\s*\n===SLIDE_END===/g;
+    const slides = [];
+    let match;
+    
+    while ((match = slideRegex.exec(content)) !== null) {
+      const slideNumber = parseInt(match[1]);
+      const slideTitle = match[2].trim();
+      let slideContent = match[3].trim();
+      
+      // Clean up content to remove any stray content from other slides
+      slideContent = slideContent
+        .replace(/^#+\s*[A-Z\s]+:?\s*$/gm, '') // Remove standalone headings
+        .replace(/^[A-Z\s]+:?\s*$/gm, '') // Remove standalone title-like text
+        .replace(/\n\s*\n\s*\n/g, '\n\n') // Clean up excessive line breaks
+        .trim();
+      
+      // Ensure content is not empty
+      if (slideContent.length === 0) {
+        slideContent = `Content for ${slideTitle}`;
+      }
+      
+      slides.push({
+        id: slideNumber,
+        title: slideTitle,
+        content: convertMarkdownToFormattedText(slideContent),
+        elements: [],
+        background: "#ffffff",
+        layout: slideNumber === 1 ? "title" : "content",
+        style: {
+          fontFamily: "Poppins",
+          fontSize: 11,
+          fontWeight: "normal",
+          fontStyle: "normal",
+          textDecoration: "none",
+          textAlign: "left",
+          color: "#000000"
+        }
+      });
+    }
+    
+    console.log(`Schema parser found ${slides.length} slides`);
+    return slides;
+  }, [convertMarkdownToFormattedText]);
+
+  // Function to convert AI content into slides with intelligent structure analysis
+  const convertContentToSlides = useCallback((content: string) => {
+    console.log("Starting content analysis..."); // Debug log
+    
+    // First, try schema-based parsing
+    const schemaSlides = parseSchemaBasedContent(content);
+    if (schemaSlides.length > 0) {
+      console.log(`Schema parser successfully created ${schemaSlides.length} slides`);
+      return schemaSlides;
+    }
+    
+    console.log("Schema parsing failed, falling back to intelligent analysis..."); // Debug log
+    
+    // Helper functions for intelligent analysis
+    const detectTopicShiftLocal = (currentContent, newLine, indicators) => {
+      const currentText = currentContent.join(' ').toLowerCase();
+      const newText = newLine.toLowerCase();
+      
+      const currentIndicators = indicators.filter(ind => currentText.includes(ind));
+      const newIndicators = indicators.filter(ind => newText.includes(ind));
+      
+      return newIndicators.length > 0 && 
+             newIndicators.some(ind => !currentIndicators.includes(ind));
+    };
+
+    const generateTitleFromContentLocal = (content) => {
+      const words = content.toLowerCase().split(/\s+/);
+      const importantWords = [
+        'executive', 'summary', 'market', 'analysis', 'solution', 'implementation',
+        'timeline', 'risk', 'financial', 'success', 'team', 'technical', 'strategy',
+        'overview', 'approach', 'management', 'development', 'architecture'
+      ];
+      
+      const foundWord = importantWords.find(word => words.includes(word));
+      if (foundWord) {
+        return foundWord.charAt(0).toUpperCase() + foundWord.slice(1) + ' Overview';
+      }
+      
+      const meaningfulWords = words.filter(word => word.length > 3).slice(0, 3);
+      return meaningfulWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    };
+
+    const extractSectionTitleLocal = (section) => {
+      for (const line of section.content.slice(0, 3)) {
+        const headingMatch = line.match(/^#+\s*\*?\*?([^*\n]+)\*?\*?$/);
+        if (headingMatch) {
+          return headingMatch[1].trim();
+        }
+        
+        const boldMatch = line.match(/^\*\*([^*]+)\*\*/);
+        if (boldMatch) {
+          return boldMatch[1].trim();
+        }
+        
+        if (line.length < 50 && line.length > 10 && !line.includes('.') && !line.startsWith('-')) {
+          return line.trim();
+        }
+      }
+      
+      return generateTitleFromContentLocal(section.content.join(' '));
+    };
+
+    const extractTitleFromLineLocal = (line) => {
+      return line.replace(/^#+\s*/, '').replace(/\*\*/g, '').trim();
+    };
+
+    // Intelligent content analyzer
+    const analyzeContentStructureLocal = (content) => {
+      const sections = [];
+      const lines = content.split('\n').filter(line => line.trim());
+      
+      const topicIndicators = [
+        'executive', 'summary', 'overview', 'introduction', 'background',
+        'market', 'analysis', 'industry', 'competitive', 'landscape', 'trends',
+        'solution', 'architecture', 'technical', 'approach', 'methodology',
+        'implementation', 'strategy', 'development', 'deployment', 'rollout',
+        'timeline', 'milestones', 'schedule', 'phases', 'roadmap',
+        'risk', 'management', 'mitigation', 'challenges', 'assumptions',
+        'financial', 'cost', 'budget', 'roi', 'revenue', 'investment',
+        'success', 'metrics', 'kpi', 'performance', 'measurement',
+        'team', 'resources', 'staffing', 'organization', 'roles',
+        'compliance', 'security', 'legal', 'regulatory', 'standards',
+        'integration', 'migration', 'testing', 'quality', 'assurance',
+        'training', 'support', 'maintenance', 'documentation',
+        'scalability', 'future', 'expansion', 'growth', 'sustainability'
+      ];
+
+      const MIN_SECTION_LINES = 3;
+      const MAX_SECTION_LINES = 15;
+      
+      let currentSection = { title: '', content: [], startIndex: 0 };
+      let sectionCount = 0;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        const isNewSection = 
+          line.match(/^#+\s*\*?\*?([^*\n]+)\*?\*?$/) ||
+          line.match(/^\*\*([^*]+)\*\*/) ||
+          topicIndicators.some(indicator => 
+            line.toLowerCase().includes(indicator) && 
+            (line.match(/^#+/) || line.match(/^\*\*/) || line.length < 50)
+          ) ||
+          (currentSection.content.length >= MIN_SECTION_LINES && 
+           detectTopicShiftLocal(currentSection.content, line, topicIndicators));
+        
+        if (isNewSection && currentSection.content.length >= MIN_SECTION_LINES) {
+          if (currentSection.content.length > 0) {
+            sections.push({
+              title: extractSectionTitleLocal(currentSection),
+              content: currentSection.content.join('\n'),
+              id: ++sectionCount
+            });
+          }
+          
+          currentSection = {
+            title: extractTitleFromLineLocal(line),
+            content: [line],
+            startIndex: i
+          };
+        } else {
+          currentSection.content.push(line);
+          
+          if (currentSection.content.length >= MAX_SECTION_LINES) {
+            sections.push({
+              title: extractSectionTitleLocal(currentSection),
+              content: currentSection.content.join('\n'),
+              id: ++sectionCount
+            });
+            
+            currentSection = { title: '', content: [], startIndex: i + 1 };
+          }
+        }
+      }
+      
+      if (currentSection.content.length >= MIN_SECTION_LINES) {
+        sections.push({
+          title: extractSectionTitleLocal(currentSection),
+          content: currentSection.content.join('\n'),
+          id: ++sectionCount
+        });
+      }
+      
+      return sections;
+    };
+    
+    // First, try the intelligent content structure analysis
+    const intelligentSections = analyzeContentStructureLocal(content);
+    
+    if (intelligentSections.length > 1) {
+      console.log(`Intelligent analysis found ${intelligentSections.length} sections`); // Debug log
+      
+      // Convert sections to slides
+      const slides = intelligentSections.map((section, index) => ({
+        id: index + 1,
+        title: section.title || `Section ${index + 1}`,
+        content: convertMarkdownToFormattedText(section.content),
+        elements: [],
+        background: "#ffffff",
+        layout: "content",
+        style: {
+          fontFamily: "Poppins",
+          fontSize: 11,
+          fontWeight: "normal",
+          fontStyle: "normal",
+          textDecoration: "none",
+          textAlign: "left",
+          color: "#000000"
+        }
+      }));
+      
+      console.log(`Created ${slides.length} slides from intelligent analysis`); // Debug log
+      return slides;
+    }
+    
+    // Fallback to traditional heading-based detection
+    console.log("Falling back to traditional heading detection..."); // Debug log
+    
     const lines = content.split('\n').filter(line => line.trim());
     const slides = [];
     let currentSlide = { 
@@ -225,47 +449,90 @@ const SlideEditor = () => {
     let inBulletList = false;
     let bulletItems = [];
 
+    // Define major section headings that should trigger new slides
+    const majorHeadings = [
+      'EXECUTIVE SUMMARY', 'MARKET ANALYSIS', 'SOLUTION ARCHITECTURE', 'IMPLEMENTATION STRATEGY',
+      'PROJECT TIMELINE', 'RISK MANAGEMENT', 'FINANCIAL ANALYSIS', 'SUCCESS METRICS',
+      'TECHNICAL APPROACH', 'INDUSTRY OVERVIEW', 'METHODOLOGY', 'MILESTONES',
+      'MITIGATION', 'ROI PROJECTIONS', 'PERFORMANCE INDICATORS', 'COMPETITIVE LANDSCAPE',
+      'KEY FEATURES', 'TECHNICAL STACK', 'DEVELOPMENT APPROACH', 'RESOURCE ALLOCATION',
+      'BUSINESS OVERVIEW', 'PROJECT OVERVIEW', 'SOLUTION OVERVIEW', 'MARKET OVERVIEW'
+    ];
+
     for (const line of lines) {
-      // Check for slide headings in various formats
-      if (line.startsWith('# SLIDE') || line.startsWith('# SLIDE ') || 
-          line.startsWith('**SLIDE') || line.startsWith('**SLIDE ') ||
-          line.match(/^#\s*SLIDE\s*\d+:/i) || line.match(/^\*\*SLIDE\s*\d+:/i) ||
-          line.match(/^SLIDE\s*\d+:/i)) {
-        
+      // Check for explicit slide markers first
+      const explicitSlideMatch = line.match(/^#\s*SLIDE\s*(\d+):\s*(.+)$/i) || 
+                               line.match(/^\*\*SLIDE\s*(\d+):\s*(.+)\*\*$/i) ||
+                               line.match(/^SLIDE\s*(\d+):\s*(.+)$/i) ||
+                               line.match(/^#\s*(\d+)\.\s*(.+)$/i) ||
+                               line.match(/^(\d+)\.\s*(.+)$/i);
+      
+      // Check for major section headings that should trigger new slides
+      let isMajorHeading = false;
+      let headingTitle = '';
+      
+      if (!explicitSlideMatch) {
+        // Check for markdown headings with major section names
+        const headingMatch = line.match(/^#+\s*\*?\*?([^*\n]+)\*?\*?$/);
+        if (headingMatch) {
+          const cleanHeading = headingMatch[1].trim().toUpperCase();
+          const foundHeading = majorHeadings.find(heading => 
+            cleanHeading.includes(heading) || heading.includes(cleanHeading)
+          );
+          
+          if (foundHeading) {
+            isMajorHeading = true;
+            headingTitle = headingMatch[1].trim();
+            console.log(`Found major heading: "${headingTitle}"`); // Debug log
+          }
+        }
+      }
+      
+      const shouldCreateNewSlide = explicitSlideMatch || isMajorHeading;
+      
+      console.log(`Processing line: "${line}" - Slide trigger: ${shouldCreateNewSlide ? 'YES' : 'NO'}`); // Debug log
+      
+      if (shouldCreateNewSlide) {
         // Close any open bullet list before creating new slide
-        if (inBulletList && bulletItems.length > 0) {
+        if (inBulletList && bulletItems.length > 0 && currentSlide) {
           currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
           bulletItems = [];
           inBulletList = false;
         }
         
-        // New slide with slide heading
-        if (currentSlide.content.trim()) {
+        // Save previous slide if it exists and has content
+        if (currentSlide && currentSlide.content.trim()) {
           slides.push(currentSlide);
-          slideId++;
+          console.log(`Saved slide: ${currentSlide.title}`); // Debug log
         }
         
-        // Extract slide title from the heading and clean it
-        let slideTitle = line.replace(/^#\s*SLIDE\s*\d+:\s*/i, '')
-                            .replace(/^\*\*SLIDE\s*\d+:\s*/i, '')
-                            .replace(/^SLIDE\s*\d+:\s*/i, '')
-                            .replace(/\*\*$/, '')
-                            .trim();
+        // Determine slide number and title
+        let slideNumber, slideTitle;
+        
+        if (explicitSlideMatch) {
+          slideNumber = parseInt(explicitSlideMatch[1]);
+          slideTitle = explicitSlideMatch[2].trim();
+        } else {
+          slideNumber = slideId;
+          slideTitle = headingTitle;
+          slideId++;
+        }
         
         // Clean markdown formatting from title
         slideTitle = convertMarkdownToFormattedText(slideTitle);
         
         // If no title extracted, use a default
         if (!slideTitle) {
-          slideTitle = `Slide ${slideId}`;
+          slideTitle = `Slide ${slideNumber}`;
         }
         
-        console.log(`Creating slide ${slideId}: ${slideTitle}`); // Debug log
+        console.log(`Creating slide ${slideNumber}: ${slideTitle}`); // Debug log
         
+        // Create new slide
         currentSlide = {
-          id: slideId,
+          id: slideNumber,
           title: slideTitle,
-          content: slideTitle,
+          content: '',
           elements: [],
           background: "#ffffff",
           layout: "content",
@@ -279,56 +546,57 @@ const SlideEditor = () => {
             color: "#000000"
           }
         };
-      } else if (line.startsWith('# ')) {
-        // Close any open bullet list
-        if (inBulletList && bulletItems.length > 0) {
-          currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
-          bulletItems = [];
-          inBulletList = false;
-        }
-        
-        // Regular heading - add to current slide
-        const cleanedHeading = convertMarkdownToFormattedText(line.substring(2).trim());
-        currentSlide.content += '<h1>' + cleanedHeading + '</h1>';
-      } else if (line.startsWith('## ')) {
-        // Close any open bullet list
-        if (inBulletList && bulletItems.length > 0) {
-          currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
-          bulletItems = [];
-          inBulletList = false;
-        }
-        
-        // Subheading - add to current slide
-        const cleanedSubheading = convertMarkdownToFormattedText(line.substring(3).trim());
-        currentSlide.content += '<h2>' + cleanedSubheading + '</h2>';
-      } else if (line.startsWith('### ')) {
-        // Close any open bullet list
-        if (inBulletList && bulletItems.length > 0) {
-          currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
-          bulletItems = [];
-          inBulletList = false;
-        }
-        
-        // Sub-subheading - add to current slide
-        const cleanedSubSubheading = convertMarkdownToFormattedText(line.substring(4).trim());
-        currentSlide.content += '<h3>' + cleanedSubSubheading + '</h3>';
-      } else if (line.startsWith('- ') || line.startsWith('* ')) {
-        // Bullet points - start or continue bullet list
-        if (!inBulletList) {
-          inBulletList = true;
-        }
-        const cleanedBullet = convertMarkdownToFormattedText(line.replace(/^[-*]\s*/, '').trim());
-        bulletItems.push('<li>' + cleanedBullet + '</li>');
-      } else if (line.trim()) {
-        // Close any open bullet list
-        if (inBulletList && bulletItems.length > 0) {
-          currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
-          bulletItems = [];
-          inBulletList = false;
-        }
-        
-        // Regular content - add to current slide
-        if (line.trim().length > 0) {
+      } else if (currentSlide) {
+        // Process content for current slide
+        if (line.startsWith('# ')) {
+          // Close any open bullet list
+          if (inBulletList && bulletItems.length > 0) {
+            currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
+            bulletItems = [];
+            inBulletList = false;
+          }
+          
+          // Regular heading - add to current slide
+          const cleanedHeading = convertMarkdownToFormattedText(line.substring(2).trim());
+          currentSlide.content += '<h1>' + cleanedHeading + '</h1>';
+        } else if (line.startsWith('## ')) {
+          // Close any open bullet list
+          if (inBulletList && bulletItems.length > 0) {
+            currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
+            bulletItems = [];
+            inBulletList = false;
+          }
+          
+          // Subheading - add to current slide
+          const cleanedSubheading = convertMarkdownToFormattedText(line.substring(3).trim());
+          currentSlide.content += '<h2>' + cleanedSubheading + '</h2>';
+        } else if (line.startsWith('### ')) {
+          // Close any open bullet list
+          if (inBulletList && bulletItems.length > 0) {
+            currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
+            bulletItems = [];
+            inBulletList = false;
+          }
+          
+          // Sub-subheading - add to current slide
+          const cleanedSubSubheading = convertMarkdownToFormattedText(line.substring(4).trim());
+          currentSlide.content += '<h3>' + cleanedSubSubheading + '</h3>';
+        } else if (line.startsWith('- ') || line.startsWith('* ')) {
+          // Bullet points - start or continue bullet list
+          if (!inBulletList) {
+            inBulletList = true;
+          }
+          const cleanedBullet = convertMarkdownToFormattedText(line.replace(/^[-*]\s*/, '').trim());
+          bulletItems.push('<li>' + cleanedBullet + '</li>');
+        } else if (line.trim()) {
+          // Close any open bullet list
+          if (inBulletList && bulletItems.length > 0) {
+            currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
+            bulletItems = [];
+            inBulletList = false;
+          }
+          
+          // Regular content - add to current slide
           const cleanedContent = convertMarkdownToFormattedText(line.trim());
           currentSlide.content += '<p>' + cleanedContent + '</p>';
         }
@@ -336,16 +604,107 @@ const SlideEditor = () => {
     }
 
     // Close any remaining bullet list
-    if (inBulletList && bulletItems.length > 0) {
+    if (inBulletList && bulletItems.length > 0 && currentSlide) {
       currentSlide.content += '<ul>' + bulletItems.join('') + '</ul>';
     }
 
-    // Add the last slide
-    if (currentSlide.content.trim()) {
+    // Add the last slide if it exists and has content
+    if (currentSlide && currentSlide.content.trim()) {
       slides.push(currentSlide);
     }
 
-    // If no slides were created, create a default one
+    // If no slides were created, try to create slides from major headings
+    if (slides.length === 0) {
+      console.log("No slides detected, attempting to create slides from major headings"); // Debug log
+      
+      // Try to detect major headings and create slides
+      const majorHeadings = [
+        'EXECUTIVE SUMMARY', 'MARKET ANALYSIS', 'SOLUTION ARCHITECTURE', 'IMPLEMENTATION STRATEGY',
+        'PROJECT TIMELINE', 'RISK MANAGEMENT', 'FINANCIAL ANALYSIS', 'SUCCESS METRICS',
+        'TECHNICAL APPROACH', 'INDUSTRY OVERVIEW', 'METHODOLOGY', 'MILESTONES',
+        'MITIGATION', 'ROI PROJECTIONS', 'PERFORMANCE INDICATORS'
+      ];
+      
+      let slideNumber = 1;
+      let currentSlideContent = '';
+      let currentSlideTitle = 'Title Slide';
+      
+      for (const line of lines) {
+        const upperLine = line.toUpperCase().trim();
+        
+        // Check if this line contains a major heading
+        const foundHeading = majorHeadings.find(heading => 
+          upperLine.includes(heading) || 
+          line.match(new RegExp(`^#+\\s*${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i'))
+        );
+        
+        if (foundHeading && currentSlideContent.trim()) {
+          // Save previous slide
+          slides.push({
+            id: slideNumber,
+            title: currentSlideTitle,
+            content: currentSlideContent,
+            elements: [],
+            background: "#ffffff",
+            layout: "content",
+            style: {
+              fontFamily: "Poppins",
+              fontSize: 11,
+              fontWeight: "normal",
+              fontStyle: "normal",
+              textDecoration: "none",
+              textAlign: "left",
+              color: "#000000"
+            }
+          });
+          
+          // Start new slide
+          slideNumber++;
+          currentSlideTitle = foundHeading;
+          currentSlideContent = '';
+        }
+        
+        // Add content to current slide
+        if (line.trim()) {
+          if (line.startsWith('# ')) {
+            const cleanedHeading = convertMarkdownToFormattedText(line.substring(2).trim());
+            currentSlideContent += '<h1>' + cleanedHeading + '</h1>';
+          } else if (line.startsWith('## ')) {
+            const cleanedSubheading = convertMarkdownToFormattedText(line.substring(3).trim());
+            currentSlideContent += '<h2>' + cleanedSubheading + '</h2>';
+          } else if (line.startsWith('- ') || line.startsWith('* ')) {
+            const cleanedBullet = convertMarkdownToFormattedText(line.replace(/^[-*]\s*/, '').trim());
+            currentSlideContent += '<ul><li>' + cleanedBullet + '</li></ul>';
+          } else {
+            const cleanedContent = convertMarkdownToFormattedText(line.trim());
+            currentSlideContent += '<p>' + cleanedContent + '</p>';
+          }
+        }
+      }
+      
+      // Add the last slide
+      if (currentSlideContent.trim()) {
+        slides.push({
+          id: slideNumber,
+          title: currentSlideTitle,
+          content: currentSlideContent,
+          elements: [],
+          background: "#ffffff",
+          layout: "content",
+          style: {
+            fontFamily: "Poppins",
+            fontSize: 11,
+            fontWeight: "normal",
+            fontStyle: "normal",
+            textDecoration: "none",
+            textAlign: "left",
+            color: "#000000"
+          }
+        });
+      }
+    }
+    
+    // Final fallback - if still no slides, create one default slide
     if (slides.length === 0) {
       slides.push({
         id: 1,
@@ -366,8 +725,9 @@ const SlideEditor = () => {
       });
     }
 
+    console.log(`Total slides created: ${slides.length}`); // Debug log
     return slides;
-  };
+  }, [parseSchemaBasedContent, convertMarkdownToFormattedText]);
 
   useEffect(() => {
     // Add body class to prevent scrolling
@@ -411,7 +771,7 @@ const SlideEditor = () => {
     return () => {
       document.body.classList.remove('slide-editor-active');
     };
-  }, [location.state, id]);
+  }, [location.state, id, convertContentToSlides]);
 
 
 
@@ -887,7 +1247,7 @@ const SlideEditor = () => {
                           textDecoration: slides.find(s => s.id === currentSlide)?.style?.textDecoration || textFormat.textDecoration,
                           textAlign: (slides.find(s => s.id === currentSlide)?.style?.textAlign || textFormat.textAlign) as 'left' | 'center' | 'right',
                           color: slides.find(s => s.id === currentSlide)?.style?.color || textFormat.color,
-                          minHeight: '280px',
+                          minHeight: '290px',
                           maxHeight: '400px',
                           width: '100%'
                         }}

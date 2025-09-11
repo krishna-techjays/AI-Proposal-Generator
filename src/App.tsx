@@ -7,7 +7,7 @@ import { TopNavbar } from "@/components/TopNavbar";
 import Index from "./pages/Index";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
-import NewPresentationForm from "./pages/NewPresentationForm";
+import NewPresentationForm from "./pages/AIChatProposalInterface";
 import DocumentEditor from "./pages/DocumentEditor";
 import SlideEditor from "./pages/SlideEditor";
 import NotFound from "./pages/NotFound";
